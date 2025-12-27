@@ -10,7 +10,19 @@
 #define KEYBOARD_DEV "/dev/input/by-id/[YOURDEVICE]"
 #define DISABLE_CMD "hyprctl keyword \"device[YOURDEVICEID]:enabled\" false >/dev/null 2>&1"
 #define ENABLE_CMD  "hyprctl keyword \"device[YOURDEVICEID]:enabled\" true >/dev/null 2>&1"
+
 #define TIMEOUT_MS 350
+
+int is_ignore_key(int keycode) {
+    return (keycode == KEY_LEFTCTRL ||
+            keycode == KEY_RIGHTCTRL ||
+            keycode == KEY_LEFTALT ||
+            keycode == KEY_RIGHTALT ||
+            keycode == KEY_LEFTMETA ||
+            keycode == KEY_RIGHTMETA ||
+            keycode == KEY_FN ||
+            keycode == KEY_FN_ESC);
+}
 
 int main() {
     system(ENABLE_CMD);
@@ -31,12 +43,18 @@ int main() {
         
         if (r == sizeof(ev)) {
             if (ev.type == EV_KEY && ev.value == 1) {
+                // Ignore modifier keys
+                if (is_ignore_key(ev.code)) {
+                    goto skip_key;
+                }
+                
                 if (!touchpad_disabled) {
                     system(DISABLE_CMD);
                     touchpad_disabled = 1;
                 }
                 clock_gettime(CLOCK_MONOTONIC, &last_keypress);
             }
+        skip_key:;
         } else if (r < 0) {
             if (errno != EAGAIN && errno != EWOULDBLOCK) {
                 perror("Read error");
