@@ -3,17 +3,15 @@
 #include <unistd.h>
 #include <linux/input.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <errno.h>
 
 #define KEYBOARD_DEV "/dev/input/by-id/[YOURDEVICE]"
 #define DISABLE_CMD "hyprctl keyword \"device[YOURDEVICEID]:enabled\" false >/dev/null 2>&1"
 #define ENABLE_CMD  "hyprctl keyword \"device[YOURDEVICEID]:enabled\" true >/dev/null 2>&1"
+#define TIMEOUT_MS 100
 
-#define TIMEOUT_MS 350
-
-int is_ignore_key(int keycode) {
+int ignore_key(int keycode) {
     return (keycode == KEY_LEFTCTRL ||
             keycode == KEY_RIGHTCTRL ||
             keycode == KEY_LEFTALT ||
@@ -21,7 +19,12 @@ int is_ignore_key(int keycode) {
             keycode == KEY_LEFTMETA ||
             keycode == KEY_RIGHTMETA ||
             keycode == KEY_FN ||
-            keycode == KEY_FN_ESC);
+            keycode == KEY_FN_ESC ||
+            keycode == KEY_TAB ||
+            keycode == KEY_LEFTSHIFT || 
+            keycode == KEY_RIGHTSHIFT ||
+            keycode == KEY_ENTER
+        );
 }
 
 int main() {
@@ -44,7 +47,7 @@ int main() {
         if (r == sizeof(ev)) {
             if (ev.type == EV_KEY && ev.value == 1) {
                 // Ignore modifier keys
-                if (is_ignore_key(ev.code)) {
+                if (ignore_key(ev.code)) {
                     goto skip_key;
                 }
                 

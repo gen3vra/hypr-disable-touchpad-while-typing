@@ -9,9 +9,13 @@ Disable the touchpad while typing in Hyprland. Fixes palms messing with any touc
 ## Compile
 gcc -o typingtpblock typingtpblock.c
 
-## Install (Debian)
+## Install
 mv ./typingtpblock /usr/local/bin/
 
+## Hyprland startup conf
+exec-once = /usr/local/bin/typingtpblock
+
+## Or Service Based
 /home/user/.config/systemd/user/typingtpblock.service
 ```
 [Unit]
